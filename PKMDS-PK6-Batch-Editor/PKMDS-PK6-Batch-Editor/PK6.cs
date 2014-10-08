@@ -4,36 +4,58 @@ using System.Linq;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.ComponentModel;
+using System.IO;
 namespace PKMDS
 {
+    public static class Functions
+    {
+        public static PK6 ReadPK6(String FileName)
+        {
+            PK6 pk6 = new PK6();
+            byte[] data;
+            using (FileStream fs = new FileStream(FileName, FileMode.Open, FileAccess.Read))
+            {
+                using (BinaryReader br = new BinaryReader(fs))
+                {
+                    data = br.ReadBytes((int)fs.Length);
+                    br.Close();
+                    fs.Close();
+                }
+            }
+            pk6 = (PK6)(PKMDS.Serializer.RawDeserialize(data, typeof(PK6)));
+            return pk6;
+        }
+        public static void WritePK6(PK6 pk6, String FileName)
+        {
+            byte[] data = Serializer.RawSerialize(pk6);
+            using (FileStream fs = new FileStream(FileName, FileMode.Create, FileAccess.Write))
+            {
+                using (BinaryWriter bw = new BinaryWriter(fs))
+                {
+                    bw.Write(data, 0, 0xE8);
+                    bw.Close();
+                    fs.Close();
+                }
+            }
+        }
+    }
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
     [Serializable()]
-    public class PK6
+    public struct PK6
     {
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 232)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0xE8)]
         [Browsable(false)]
-        protected byte[] Data;
-        public PK6()
-        {
-            Data = new byte[232];
-        }
+        private byte[] Data;
         public void CalcChecksum()
         {
-            /*
-             The checksum is calculated in three steps:
-
-             Split the unencrypted data from offsets 0x08 to 0xE7 into two-byte words,
-             Take the sum of the words, and
-             Truncate the sum to 16 bits.
-             */
             UInt32 sum = 0;
-            for (int i = 0x08; i < 0xE8; i += 2) 
+            for (int i = 0x08; i < 0xE7; i += 2)
             {
                 sum += BitConverter.ToUInt16(Data, i);
             }
-            Checksum = (UInt16)(sum & 0xFF);
+            Checksum = (UInt16)(sum & 0xFFFF);
         }
-        protected UInt32 EK
+        private UInt32 EK
         {
             get
             {
@@ -45,7 +67,7 @@ namespace PKMDS
                 Array.Copy(bytes, 0, Data, 0x00, 4);
             }
         }
-        protected UInt16 Checksum
+        private UInt16 Checksum
         {
             get
             {

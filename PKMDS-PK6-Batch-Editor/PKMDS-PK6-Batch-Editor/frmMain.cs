@@ -6,11 +6,13 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.IO;
 using PKMDS;
 namespace PKMDS_PK6_Batch_Editor
 {
     public partial class frmMain : Form
     {
+        PK6 pk6 = new PK6();
         public string Paras = @"..\..\Samples\Paras.pk6";
         /*
          Sample data:
@@ -22,13 +24,12 @@ namespace PKMDS_PK6_Batch_Editor
         }
         private void selectFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
+            pk6 = PKMDS.Functions.ReadPK6(Paras);
         }
         private void btnApply_Click(object sender, EventArgs e)
         {
-            PK6 pk6 = new PK6();
             pk6.CalcChecksum();
-            MessageBox.Show("Done!");
+            PKMDS.Functions.WritePK6(pk6, Paras.Replace("Paras.pk6", "Paras-2.pk6"));
         }
     }
 }
