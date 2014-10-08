@@ -12,24 +12,51 @@ namespace PKMDS_PK6_Batch_Editor
 {
     public partial class frmMain : Form
     {
-        PK6 pk6 = new PK6();
-        public string Paras = @"..\..\Samples\Paras.pk6";
-        /*
-         Sample data:
-         B15 - 3,6 - Paras (F) - Impish - Effect Spore - 05.08.12.05.08.05
-         */
+        public String inpath = "";
+        public String outpath = "";
         public frmMain()
         {
             InitializeComponent();
         }
         private void selectFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            pk6 = PKMDS.Functions.ReadPK6(Paras);
+            inpath = "";
+            FolderBrowserDialog folderbrowser = new FolderBrowserDialog();
+            folderbrowser.Description = "Select an input folder.";
+            if (folderbrowser.ShowDialog() != DialogResult.Cancel)
+            {
+                if (folderbrowser.SelectedPath != "")
+                {
+                    inpath = folderbrowser.SelectedPath;
+                }
+            }
         }
         private void btnApply_Click(object sender, EventArgs e)
         {
-            pk6.CalcChecksum();
-            PKMDS.Functions.WritePK6(pk6, Paras.Replace("Paras.pk6", "Paras-2.pk6"));
+            if (inpath != "")
+            {
+                FolderBrowserDialog folderbrowser = new FolderBrowserDialog();
+                folderbrowser.Description = "Select an output folder.";
+                if (folderbrowser.ShowDialog() != DialogResult.Cancel)
+                {
+                    if (folderbrowser.SelectedPath != "")
+                    {
+                        outpath = folderbrowser.SelectedPath;
+                    }
+                }
+                DirectoryInfo indir = new DirectoryInfo(inpath);
+                DirectoryInfo outdir = new DirectoryInfo(outpath);
+                foreach (FileInfo file in indir.GetFiles("*.pk6"))
+                {
+                    PK6 pk6 = Functions.ReadPK6(file.FullName);
+                    pk6.OTName = txtOTName.Text;
+                    pk6.OTIsFemale = rbOTFemale.Checked;
+                    pk6.TID = (UInt16)numTID.Value;
+                    pk6.SID = (UInt16)numSID.Value;
+                    pk6.CalcChecksum();
+                    Functions.WritePK6(pk6, Path.Combine(outpath, file.Name));
+                }
+            }
         }
     }
 }
