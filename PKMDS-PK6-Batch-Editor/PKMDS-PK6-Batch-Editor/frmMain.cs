@@ -20,6 +20,7 @@ namespace PKMDS_PK6_Batch_Editor
         }
         private void selectFolderToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            btnApply.Enabled = false;
             inpath = "";
             FolderBrowserDialog folderbrowser = new FolderBrowserDialog();
             folderbrowser.Description = "Select an input folder.";
@@ -28,6 +29,7 @@ namespace PKMDS_PK6_Batch_Editor
                 if (folderbrowser.SelectedPath != "")
                 {
                     inpath = folderbrowser.SelectedPath;
+                    btnApply.Enabled = true;
                 }
             }
         }
