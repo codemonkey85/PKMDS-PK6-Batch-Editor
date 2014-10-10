@@ -134,6 +134,7 @@ namespace PKMDS
                     value = value.Substring(0, 12);
                 }
                 byte[] bytes = System.Text.Encoding.Unicode.GetBytes(value);
+                Array.Clear(Data, 0xB0, 24);
                 Array.Copy(bytes, 0, Data, 0xB0, bytes.Length);
             }
         }
